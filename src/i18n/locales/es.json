@@ -1,0 +1,22 @@
+
+{
+  "chatbot": {
+    "title": "Tu Experto Agrícola 24/7",
+    "description": "Haz cualquier pregunta agrícola y obtén asesoramiento personalizado basado en tecnología de IA de vanguardia y experiencia agrícola.",
+    "welcome": "¡Hola! Soy tu asistente AgriGenius. ¿Cómo puedo ayudarte con tus necesidades agrícolas hoy?",
+    "inputPlaceholder": "Pregunta sobre cultivos, plagas, clima o técnicas...",
+    "thinking": "Pensando...",
+    "voiceStart": "Iniciar entrada de voz",
+    "voiceStop": "Detener escucha",
+    "listening": "Escuchando...",
+    "speakNow": "Habla ahora para enviar un mensaje.",
+    "voiceError": "Error de Reconocimiento de Voz",
+    "voiceNotSupported": "Tu navegador no soporta el reconocimiento de voz.",
+    "tryAgain": "No se pudo iniciar el reconocimiento de voz. Por favor, inténtalo de nuevo."
+  },
+  "language": {
+    "en": "Inglés",
+    "es": "Español",
+    "fr": "Francés"
+  }
+}

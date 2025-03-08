@@ -6,6 +6,7 @@ import { Send, Loader2, Mic, MicOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AnimatedLogo from './AnimatedLogo';
 import { toast } from "@/components/ui/use-toast";
+import { useTranslation } from 'react-i18next';
 
 interface Message {
   id: string;
@@ -14,10 +15,11 @@ interface Message {
 }
 
 const Chatbot: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: "Hello! I'm your AgriGenius assistant. How can I help you with your farming needs today?",
+      content: t('chatbot.welcome'),
       sender: 'bot'
     }
   ]);
@@ -26,6 +28,17 @@ const Chatbot: React.FC = () => {
   const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  // Update welcome message when language changes
+  useEffect(() => {
+    setMessages([
+      {
+        id: '1',
+        content: t('chatbot.welcome'),
+        sender: 'bot'
+      }
+    ]);
+  }, [i18n.language, t]);
 
   useEffect(() => {
     scrollToBottom();
@@ -38,7 +51,9 @@ const Chatbot: React.FC = () => {
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
-      recognitionRef.current.lang = 'en-US';
+      recognitionRef.current.lang = i18n.language === 'en' ? 'en-US' : 
+                                   i18n.language === 'es' ? 'es-ES' : 
+                                   'fr-FR';
 
       recognitionRef.current.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
@@ -53,8 +68,8 @@ const Chatbot: React.FC = () => {
         console.error('Speech recognition error', event.error);
         setIsListening(false);
         toast({
-          title: "Voice Recognition Error",
-          description: `Could not recognize speech: ${event.error}`,
+          title: t('chatbot.voiceError'),
+          description: `${t('chatbot.tryAgain')}: ${event.error}`,
           variant: "destructive"
         });
       };
@@ -69,7 +84,16 @@ const Chatbot: React.FC = () => {
         recognitionRef.current.abort();
       }
     };
-  }, []);
+  }, [i18n.language, t]);
+
+  // Update recognition language when language changes
+  useEffect(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.lang = i18n.language === 'en' ? 'en-US' : 
+                                   i18n.language === 'es' ? 'es-ES' : 
+                                   'fr-FR';
+    }
+  }, [i18n.language]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -120,8 +144,8 @@ const Chatbot: React.FC = () => {
   const toggleListening = () => {
     if (!recognitionRef.current) {
       toast({
-        title: "Voice Recognition Not Supported",
-        description: "Your browser does not support voice recognition.",
+        title: t('chatbot.voiceError'),
+        description: t('chatbot.voiceNotSupported'),
         variant: "destructive"
       });
       return;
@@ -135,14 +159,14 @@ const Chatbot: React.FC = () => {
         recognitionRef.current.start();
         setIsListening(true);
         toast({
-          title: "Listening...",
-          description: "Speak now to send a message.",
+          title: t('chatbot.listening'),
+          description: t('chatbot.speakNow'),
         });
       } catch (error) {
         console.error('Speech recognition error', error);
         toast({
-          title: "Voice Recognition Error",
-          description: "Could not start voice recognition. Please try again.",
+          title: t('chatbot.voiceError'),
+          description: t('chatbot.tryAgain'),
           variant: "destructive"
         });
       }
@@ -162,9 +186,9 @@ const Chatbot: React.FC = () => {
           <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-4">
             AI Assistant
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Your 24/7 Farming Expert</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('chatbot.title')}</h2>
           <p className="text-foreground/70 max-w-2xl mx-auto">
-            Ask any agricultural questions and get personalized advice based on cutting-edge AI technology and agricultural expertise.
+            {t('chatbot.description')}
           </p>
         </div>
         
@@ -222,7 +246,7 @@ const Chatbot: React.FC = () => {
                   </div>
                   <div className="rounded-xl px-4 py-3 bg-muted rounded-tl-none flex items-center">
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    <span>Thinking...</span>
+                    <span>{t('chatbot.thinking')}</span>
                   </div>
                 </div>
               )}
@@ -236,7 +260,7 @@ const Chatbot: React.FC = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about crops, pests, weather, or techniques..."
+                placeholder={t('chatbot.inputPlaceholder')}
                 disabled={loading || isListening}
                 className="flex-1"
               />
@@ -248,7 +272,7 @@ const Chatbot: React.FC = () => {
                   isListening && "animate-pulse"
                 )}
                 disabled={loading}
-                title={isListening ? "Stop listening" : "Start voice input"}
+                title={isListening ? t('chatbot.voiceStop') : t('chatbot.voiceStart')}
               >
                 {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
               </Button>
