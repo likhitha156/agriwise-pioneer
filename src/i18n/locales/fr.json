@@ -12,11 +12,17 @@
     "speakNow": "Parlez maintenant pour envoyer un message.",
     "voiceError": "Erreur de Reconnaissance Vocale",
     "voiceNotSupported": "Votre navigateur ne prend pas en charge la reconnaissance vocale.",
-    "tryAgain": "Impossible de démarrer la reconnaissance vocale. Veuillez réessayer."
+    "tryAgain": "Impossible de démarrer la reconnaissance vocale. Veuillez réessayer.",
+    "attach": "Joindre des fichiers",
+    "fileAttached": "Fichier Joint",
+    "fileAttachedSingular": "fichier a été joint",
+    "fileAttachedPlural": "fichiers ont été joints"
   },
   "language": {
     "en": "Anglais",
     "es": "Espagnol",
-    "fr": "Français"
+    "fr": "Français",
+    "hi": "Hindi",
+    "te": "Télougou"
   }
 }

@@ -6,6 +6,8 @@ import { initReactI18next } from 'react-i18next';
 import enTranslation from './locales/en.json';
 import esTranslation from './locales/es.json';
 import frTranslation from './locales/fr.json';
+import hiTranslation from './locales/hi.json';
+import teTranslation from './locales/te.json';
 
 // Initialize i18next
 i18n
@@ -20,6 +22,12 @@ i18n
       },
       fr: {
         translation: frTranslation
+      },
+      hi: {
+        translation: hiTranslation
+      },
+      te: {
+        translation: teTranslation
       }
     },
     lng: 'en', // Default language

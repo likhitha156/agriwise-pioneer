@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +39,6 @@ const Chatbot: React.FC = () => {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Update welcome message when language changes
   useEffect(() => {
     setMessages([
       {
@@ -56,20 +54,25 @@ const Chatbot: React.FC = () => {
   }, [messages]);
 
   useEffect(() => {
-    // Initialize speech recognition
     if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
-      recognitionRef.current.lang = i18n.language === 'en' ? 'en-US' : 
-                                   i18n.language === 'es' ? 'es-ES' : 
-                                   'fr-FR';
+      
+      const langMap: {[key: string]: string} = {
+        'en': 'en-US',
+        'es': 'es-ES',
+        'fr': 'fr-FR',
+        'hi': 'hi-IN',
+        'te': 'te-IN'
+      };
+      
+      recognitionRef.current.lang = langMap[i18n.language] || 'en-US';
 
       recognitionRef.current.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         setInput(transcript);
-        // Auto-send the voice message
         setTimeout(() => {
           handleSendVoiceMessage(transcript);
         }, 500);
@@ -97,12 +100,17 @@ const Chatbot: React.FC = () => {
     };
   }, [i18n.language, t]);
 
-  // Update recognition language when language changes
   useEffect(() => {
     if (recognitionRef.current) {
-      recognitionRef.current.lang = i18n.language === 'en' ? 'en-US' : 
-                                   i18n.language === 'es' ? 'es-ES' : 
-                                   'fr-FR';
+      const langMap: {[key: string]: string} = {
+        'en': 'en-US',
+        'es': 'es-ES',
+        'fr': 'fr-FR',
+        'hi': 'hi-IN',
+        'te': 'te-IN'
+      };
+      
+      recognitionRef.current.lang = langMap[i18n.language] || 'en-US';
     }
   }, [i18n.language]);
 
@@ -113,7 +121,6 @@ const Chatbot: React.FC = () => {
   const handleSendVoiceMessage = (transcript: string) => {
     if (transcript.trim() === '' && attachments.length === 0) return;
     
-    // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       content: transcript,
@@ -126,7 +133,6 @@ const Chatbot: React.FC = () => {
     setAttachments([]);
     setLoading(true);
     
-    // Simulate AI response
     setTimeout(() => {
       const botResponses = [
         "Based on your soil type and climate, I recommend planting tomatoes, peppers, or eggplants in your region this season.",
@@ -216,7 +222,6 @@ const Chatbot: React.FC = () => {
       description: `${files.length} ${files.length === 1 ? t('chatbot.fileAttachedSingular') : t('chatbot.fileAttachedPlural')}`,
     });
     
-    // Reset the file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
