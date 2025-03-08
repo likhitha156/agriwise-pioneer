@@ -12,7 +12,11 @@
     "speakNow": "Speak now to send a message.",
     "voiceError": "Voice Recognition Error",
     "voiceNotSupported": "Your browser does not support voice recognition.",
-    "tryAgain": "Could not start voice recognition. Please try again."
+    "tryAgain": "Could not start voice recognition. Please try again.",
+    "attach": "Attach files",
+    "fileAttached": "File Attached",
+    "fileAttachedSingular": "file has been attached",
+    "fileAttachedPlural": "files have been attached"
   },
   "language": {
     "en": "English",

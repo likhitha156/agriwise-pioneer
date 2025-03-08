@@ -2,16 +2,25 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader2, Mic, MicOff } from "lucide-react";
+import { Send, Loader2, Mic, MicOff, Image, Paperclip, File } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AnimatedLogo from './AnimatedLogo';
 import { toast } from "@/components/ui/use-toast";
 import { useTranslation } from 'react-i18next';
 
+interface Attachment {
+  id: string;
+  type: 'image' | 'document';
+  name: string;
+  url: string;
+  file: File;
+}
+
 interface Message {
   id: string;
   content: string;
   sender: 'user' | 'bot';
+  attachments?: Attachment[];
 }
 
 const Chatbot: React.FC = () => {
@@ -26,8 +35,10 @@ const Chatbot: React.FC = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Update welcome message when language changes
   useEffect(() => {
@@ -100,17 +111,19 @@ const Chatbot: React.FC = () => {
   };
 
   const handleSendVoiceMessage = (transcript: string) => {
-    if (transcript.trim() === '') return;
+    if (transcript.trim() === '' && attachments.length === 0) return;
     
     // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       content: transcript,
-      sender: 'user'
+      sender: 'user',
+      attachments: attachments.length > 0 ? [...attachments] : undefined
     };
     
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setAttachments([]);
     setLoading(true);
     
     // Simulate AI response
@@ -137,7 +150,7 @@ const Chatbot: React.FC = () => {
   };
 
   const handleSend = () => {
-    if (input.trim() === '') return;
+    if (input.trim() === '' && attachments.length === 0) return;
     handleSendVoiceMessage(input);
   };
 
@@ -177,6 +190,44 @@ const Chatbot: React.FC = () => {
     if (e.key === 'Enter') {
       handleSend();
     }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    const newAttachments: Attachment[] = Array.from(files).map(file => {
+      const isImage = file.type.startsWith('image/');
+      const id = Date.now().toString() + Math.random().toString().slice(2, 8);
+      const url = URL.createObjectURL(file);
+      
+      return {
+        id,
+        type: isImage ? 'image' : 'document',
+        name: file.name,
+        url,
+        file
+      };
+    });
+    
+    setAttachments(prev => [...prev, ...newAttachments]);
+    toast({
+      title: t('chatbot.fileAttached'),
+      description: `${files.length} ${files.length === 1 ? t('chatbot.fileAttachedSingular') : t('chatbot.fileAttachedPlural')}`,
+    });
+    
+    // Reset the file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeAttachment = (id: string) => {
+    setAttachments(prev => prev.filter(attachment => attachment.id !== id));
+  };
+
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -231,6 +282,32 @@ const Chatbot: React.FC = () => {
                     )}
                   >
                     {message.content}
+                    
+                    {message.attachments && message.attachments.length > 0 && (
+                      <div className="mt-2 space-y-2">
+                        {message.attachments.map(attachment => (
+                          <div key={attachment.id} className="rounded-md overflow-hidden">
+                            {attachment.type === 'image' ? (
+                              <img 
+                                src={attachment.url} 
+                                alt={attachment.name} 
+                                className="max-h-40 rounded-md object-contain bg-black/5"
+                              />
+                            ) : (
+                              <a 
+                                href={attachment.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="flex items-center p-2 bg-white/10 rounded-md hover:bg-white/20 transition-colors"
+                              >
+                                <File className="h-4 w-4 mr-2" />
+                                <span className="text-sm truncate max-w-[200px]">{attachment.name}</span>
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   {message.sender === 'user' && (
                     <div className="w-8 h-8 rounded-full bg-soil-200 flex items-center justify-center ml-2">
@@ -254,8 +331,50 @@ const Chatbot: React.FC = () => {
             </div>
           </div>
           
+          {attachments.length > 0 && (
+            <div className="p-2 border-t bg-background/70">
+              <div className="flex flex-wrap gap-2">
+                {attachments.map(attachment => (
+                  <div key={attachment.id} className="flex items-center gap-1 bg-background/70 rounded-md p-1 pr-2 border">
+                    {attachment.type === 'image' ? (
+                      <div className="h-6 w-6 rounded-sm overflow-hidden mr-1">
+                        <img src={attachment.url} alt={attachment.name} className="h-full w-full object-cover" />
+                      </div>
+                    ) : (
+                      <File className="h-4 w-4 mr-1" />
+                    )}
+                    <span className="text-xs truncate max-w-[100px]">{attachment.name}</span>
+                    <button 
+                      onClick={() => removeAttachment(attachment.id)}
+                      className="text-red-500 hover:text-red-700 ml-1 rounded-full h-4 w-4 flex items-center justify-center"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
           <div className="p-4 border-t bg-background/50">
             <div className="flex items-center space-x-2">
+              <input 
+                type="file" 
+                multiple 
+                className="hidden" 
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx"
+              />
+              <Button
+                onClick={handleAttachClick}
+                variant="outline"
+                size="icon"
+                className="flex-shrink-0"
+                title={t('chatbot.attach')}
+              >
+                <Paperclip className="h-4 w-4" />
+              </Button>
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -279,7 +398,7 @@ const Chatbot: React.FC = () => {
               <Button 
                 onClick={handleSend} 
                 className="bg-primary hover:bg-primary/90"
-                disabled={loading || input.trim() === ''}
+                disabled={loading || (input.trim() === '' && attachments.length === 0)}
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>

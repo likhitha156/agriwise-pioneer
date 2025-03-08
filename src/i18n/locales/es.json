@@ -12,7 +12,11 @@
     "speakNow": "Habla ahora para enviar un mensaje.",
     "voiceError": "Error de Reconocimiento de Voz",
     "voiceNotSupported": "Tu navegador no soporta el reconocimiento de voz.",
-    "tryAgain": "No se pudo iniciar el reconocimiento de voz. Por favor, inténtalo de nuevo."
+    "tryAgain": "No se pudo iniciar el reconocimiento de voz. Por favor, inténtalo de nuevo.",
+    "attach": "Adjuntar archivos",
+    "fileAttached": "Archivo Adjunto",
+    "fileAttachedSingular": "archivo ha sido adjuntado",
+    "fileAttachedPlural": "archivos han sido adjuntados"
   },
   "language": {
     "en": "Inglés",
