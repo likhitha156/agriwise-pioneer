@@ -43,6 +43,11 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Language-specific font variables */
+    --font-latin: 'Inter var', 'Lexend', system-ui, sans-serif;
+    --font-hindi: 'Noto Sans Devanagari', 'Poppins', var(--font-latin);
+    --font-telugu: 'Noto Sans Telugu', 'Poppins', var(--font-latin);
   }
 
   .dark {
@@ -93,6 +98,20 @@
   
   html, body {
     @apply bg-background text-foreground overflow-x-hidden;
+  }
+
+  /* Apply language-specific fonts */
+  html[lang="hi"] body {
+    font-family: var(--font-hindi);
+  }
+
+  html[lang="te"] body {
+    font-family: var(--font-telugu);
+  }
+
+  /* Default font for other languages */
+  body {
+    font-family: var(--font-latin);
   }
 
   /* Modern scrollbar */

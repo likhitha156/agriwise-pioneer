@@ -105,8 +105,10 @@ export default {
 				},
 			},
 			fontFamily: {
-				sans: ['Inter var', 'sans-serif'],
+				sans: ['var(--font-latin)'],
 				display: ['Lexend', 'sans-serif'],
+				hindi: ['var(--font-hindi)'],
+				telugu: ['var(--font-telugu)'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
