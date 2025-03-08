@@ -2,9 +2,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, Mic, MicOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AnimatedLogo from './AnimatedLogo';
+import { toast } from "@/components/ui/use-toast";
 
 interface Message {
   id: string;
@@ -22,23 +23,65 @@ const Chatbot: React.FC = () => {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    // Initialize speech recognition
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'en-US';
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        // Auto-send the voice message
+        setTimeout(() => {
+          handleSendVoiceMessage(transcript);
+        }, 500);
+      };
+
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        setIsListening(false);
+        toast({
+          title: "Voice Recognition Error",
+          description: `Could not recognize speech: ${event.error}`,
+          variant: "destructive"
+        });
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
+  }, []);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSend = () => {
-    if (input.trim() === '') return;
+  const handleSendVoiceMessage = (transcript: string) => {
+    if (transcript.trim() === '') return;
     
     // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: input,
+      content: transcript,
       sender: 'user'
     };
     
@@ -67,6 +110,43 @@ const Chatbot: React.FC = () => {
       setMessages(prev => [...prev, botMessage]);
       setLoading(false);
     }, 1500);
+  };
+
+  const handleSend = () => {
+    if (input.trim() === '') return;
+    handleSendVoiceMessage(input);
+  };
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      toast({
+        title: "Voice Recognition Not Supported",
+        description: "Your browser does not support voice recognition.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+        toast({
+          title: "Listening...",
+          description: "Speak now to send a message.",
+        });
+      } catch (error) {
+        console.error('Speech recognition error', error);
+        toast({
+          title: "Voice Recognition Error",
+          description: "Could not start voice recognition. Please try again.",
+          variant: "destructive"
+        });
+      }
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -157,9 +237,21 @@ const Chatbot: React.FC = () => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask about crops, pests, weather, or techniques..."
-                disabled={loading}
+                disabled={loading || isListening}
                 className="flex-1"
               />
+              <Button 
+                onClick={toggleListening}
+                variant={isListening ? "destructive" : "secondary"}
+                className={cn(
+                  "px-3 transition-all duration-300",
+                  isListening && "animate-pulse"
+                )}
+                disabled={loading}
+                title={isListening ? "Stop listening" : "Start voice input"}
+              >
+                {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </Button>
               <Button 
                 onClick={handleSend} 
                 className="bg-primary hover:bg-primary/90"
